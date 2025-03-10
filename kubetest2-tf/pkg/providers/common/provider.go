@@ -8,6 +8,7 @@ import (
 	"path/filepath"
 
 	"github.com/spf13/pflag"
+
 	"sigs.k8s.io/provider-ibmcloud-test-infra/kubetest2-tf/pkg/providers"
 	"sigs.k8s.io/provider-ibmcloud-test-infra/kubetest2-tf/pkg/tfvars"
 	"sigs.k8s.io/provider-ibmcloud-test-infra/kubetest2-tf/pkg/utils"
@@ -81,7 +82,6 @@ func (p *Provider) DumpConfig(dir string) error {
 	if err != nil {
 		return fmt.Errorf("failed to dump the json config to: %s, err: %v", filename, err)
 	}
-
 	return nil
 }
 

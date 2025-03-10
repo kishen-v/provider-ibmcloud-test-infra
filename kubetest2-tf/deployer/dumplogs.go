@@ -78,13 +78,13 @@ func (d *deployer) DumpClusterLogs() error {
 			cmd.Stderr = &stdErr
 			err = cmd.Run()
 			if err != nil {
-				errors = append(errors, fmt.Errorf("Failed to collect logs from node - %v - %v, err: %v", commandArgs, stdErr.String(), err))
+				errors = append(errors, fmt.Errorf("failed to collect logs from node - %v - %v, err: %v", commandArgs, stdErr.String(), err))
 				continue
 			}
 
 			outfile, err := os.Create(filepath.Join(d.logsDir, fmt.Sprintf("%s-%s.log", machineIP, logFile)))
 			if err != nil {
-				errors = append(errors, fmt.Errorf("Failed to create a log-file: %v", err))
+				errors = append(errors, fmt.Errorf("failed to create a log-file: %v", err))
 				continue
 			} else {
 				outfile.WriteString(string(stdOut.Bytes()))
@@ -93,7 +93,7 @@ func (d *deployer) DumpClusterLogs() error {
 		}
 	}
 	if len(errors) > 0 {
-		return fmt.Errorf("Observed one or more errors while collecting logs: %v", errors)
+		return fmt.Errorf("observed one or more errors while collecting logs: %v", errors)
 	}
 	klog.Infof("Successfully collected cluster logs under %s", d.logsDir)
 	return nil

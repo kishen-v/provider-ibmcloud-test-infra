@@ -7,6 +7,7 @@ import (
 	"path"
 
 	"github.com/spf13/pflag"
+
 	"sigs.k8s.io/provider-ibmcloud-test-infra/kubetest2-tf/pkg/providers"
 	"sigs.k8s.io/provider-ibmcloud-test-infra/kubetest2-tf/pkg/tfvars/vpc"
 )
