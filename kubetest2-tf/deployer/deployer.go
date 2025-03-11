@@ -19,10 +19,11 @@ import (
 	"github.com/octago/sflags/gen/gpflag"
 	"github.com/spf13/pflag"
 
-	"k8s.io/client-go/tools/clientcmd"
-	"k8s.io/klog/v2"
 	"sigs.k8s.io/kubetest2/pkg/artifacts"
 	"sigs.k8s.io/kubetest2/pkg/types"
+
+	"k8s.io/client-go/tools/clientcmd"
+	"k8s.io/klog/v2"
 
 	"sigs.k8s.io/provider-ibmcloud-test-infra/kubetest2-tf/deployer/options"
 	"sigs.k8s.io/provider-ibmcloud-test-infra/kubetest2-tf/pkg/ansible"
@@ -244,14 +245,14 @@ func (d *deployer) Up() error {
 		return fmt.Errorf("failed to marshal provider into JSON: %v", err)
 	}
 	klog.Infof("commonJSON: %v", string(commonJSON))
-	//Unmarshalling commonJSON into map to add extra-vars
+	// Unmarshalling commonJSON into map to add extra-vars
 	final := map[string]interface{}{}
 	json.Unmarshal(commonJSON, &final)
-	//Iterating through extra-vars and adding them to map
+	// Iterating through extra-vars and adding them to map
 	for k := range d.ExtraVars {
 		final[k] = d.ExtraVars[k]
 	}
-	//Marshalling back the map to JSON
+	// Marshalling back the map to JSON
 	finalJSON, err := json.Marshal(final)
 	if err != nil {
 		return fmt.Errorf("failed to marshal provider into JSON: %v", err)

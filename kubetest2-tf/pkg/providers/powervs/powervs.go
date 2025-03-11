@@ -6,6 +6,7 @@ import (
 	"os"
 	"path"
 
+	psutils "github.com/ppc64le-cloud/powervs-utils"
 	"github.com/spf13/pflag"
 
 	"sigs.k8s.io/provider-ibmcloud-test-infra/kubetest2-tf/pkg/providers"
@@ -42,9 +43,6 @@ func (p *Provider) BindFlags(flags *pflag.FlagSet) {
 		&p.Apikey, "powervs-api-key", "", "IBM Cloud API Key used for accessing the APIs",
 	)
 	flags.StringVar(
-		&p.Region, "powervs-region", "", "IBM Cloud PowerVS region name",
-	)
-	flags.StringVar(
 		&p.Zone, "powervs-zone", "", "IBM Cloud PowerVS zone name",
 	)
 	flags.StringVar(
@@ -65,6 +63,12 @@ func (p *Provider) BindFlags(flags *pflag.FlagSet) {
 	flags.StringVar(
 		&p.SSHKey, "powervs-ssh-key", "", "PowerVS SSH Key to authenticate LPARs",
 	)
+	pzone := psutils.RegionFromZone(p.Zone)
+	fmt.Printf("elemeno: %s\n", pzone)
+	flags.StringVar(
+		&p.Region, "powervs-region", pzone, "IBM Cloud PowerVS region name",
+	)
+	flags.MarkDeprecated("powervs-region", "Autodetermined through zone")
 }
 
 func (p *Provider) DumpConfig(dir string) error {
