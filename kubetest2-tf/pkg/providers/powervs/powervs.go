@@ -63,6 +63,7 @@ func (p *Provider) BindFlags(flags *pflag.FlagSet) {
 	flags.StringVar(
 		&p.SSHKey, "powervs-ssh-key", "", "PowerVS SSH Key to authenticate LPARs",
 	)
+	fmt.Println("pzone", p.Zone)
 	pzone := psutils.RegionFromZone(p.Zone)
 	fmt.Printf("elemeno: %s\n", pzone)
 	flags.StringVar(
