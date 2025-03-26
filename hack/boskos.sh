@@ -19,9 +19,9 @@ set -o nounset
 set -o pipefail
 
 USER=${USER:-"k8s-prow-job"}
-RESOURCE_TYPE=${RESOURCE_TYPE:-"powervs-k8s-conformance"}
+RESOURCE_TYPE=${RESOURCE_TYPE:-"powervs"}
 
-trap cleanup EXIT
+trap 'cleanup ${HEART_BEAT_PID:-}' EXIT
 
 release_account(){
     url="http://${BOSKOS_HOST}/release?name=${BOSKOS_RESOURCE_NAME}&dest=dirty&owner=${USER}"
