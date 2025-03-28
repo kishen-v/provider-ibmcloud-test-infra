@@ -80,7 +80,6 @@ if [ -z "${BOSKOS_HOST:-}" ]; then
     exit 0
 fi
 
-set +o errexit
 # Create a temporary file to store environment variables
 account_env_var_file="$(mktemp)"
 
