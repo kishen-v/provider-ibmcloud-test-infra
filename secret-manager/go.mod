@@ -3,7 +3,6 @@ module sigs.k8s.io/provider-ibmcloud-test-infra/secret-manager
 go 1.24.1
 
 require (
-	github.com/IBM/go-sdk-core v1.1.0
 	github.com/IBM/go-sdk-core/v5 v5.18.5
 	github.com/IBM/secrets-manager-go-sdk/v2 v2.0.10
 	github.com/davecgh/go-spew v1.1.1
@@ -13,7 +12,6 @@ require (
 
 require (
 	github.com/asaskevich/govalidator v0.0.0-20230301143203-a9d515a09cc2 // indirect
-	github.com/dgrijalva/jwt-go v3.2.0+incompatible // indirect
 	github.com/gabriel-vasile/mimetype v1.4.7 // indirect
 	github.com/go-openapi/errors v0.22.0 // indirect
 	github.com/go-openapi/strfmt v0.23.0 // indirect
@@ -35,6 +33,5 @@ require (
 	golang.org/x/net v0.34.0 // indirect
 	golang.org/x/sys v0.30.0 // indirect
 	golang.org/x/text v0.22.0 // indirect
-	gopkg.in/go-playground/validator.v9 v9.31.0 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 )

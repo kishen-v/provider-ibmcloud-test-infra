@@ -19,9 +19,8 @@ package secretmanager
 import (
 	"fmt"
 
-	"github.com/IBM/go-sdk-core/core"
+	"github.com/IBM/go-sdk-core/v5/core"
 	sm "github.com/IBM/secrets-manager-go-sdk/v2/secretsmanagerv2"
-	"github.com/davecgh/go-spew/spew"
 )
 
 type Interface interface {
@@ -77,11 +76,9 @@ func (s *SecretManager) RotateSecret(id *string) error {
 		SecretID:               id,
 		SecretVersionPrototype: &sm.IAMCredentialsSecretVersionPrototype{},
 	}
-	version, result, err := s.smv2.CreateSecretVersion(&options)
+	_, _, err := s.smv2.CreateSecretVersion(&options)
 	if err != nil {
 		return err
 	}
-	spew.Dump(version)
-	spew.Dump(result)
 	return nil
 }

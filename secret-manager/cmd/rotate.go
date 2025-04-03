@@ -91,6 +91,7 @@ func rotate(sm secretmanager.Interface) error {
 		if err := sm.RotateSecret(s.ID); err != nil {
 			return err
 		}
+		fmt.Printf("Secret \"%s\" (ID: %s) has been rotated.\n", *s.Name, *s.ID)
 	}
 	return nil
 }
