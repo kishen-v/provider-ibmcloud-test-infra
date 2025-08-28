@@ -209,7 +209,9 @@ func (d *deployer) Up() error {
 	if err != nil {
 		return fmt.Errorf("error while marshaling data %v", err)
 	}
-	json.Unmarshal(data, &tfOutput)
+	if err := json.Unmarshal(data, &tfOutput); err != nil {
+		return fmt.Errorf("error while unmarshaling data %v", err)
+	}
 	for _, machineType := range []string{"Masters", "Workers"} {
 		if val, ok := tfOutput[strings.ToLower(machineType)]; !ok {
 			fmt.Errorf("error while unmarshaling machine IPs from terraform output")
@@ -260,7 +262,7 @@ func (d *deployer) Up() error {
 	}
 
 	if d.SetKubeconfig {
-		if err = setKubeconfig(inventory.Masters[0]); err != nil {
+		if err := setKubeconfig(inventory.Masters[0]); err != nil {
 			return fmt.Errorf("failed to setKubeconfig: %v", err)
 		}
 		fmt.Printf("KUBECONFIG set to: %s\n", os.Getenv("KUBECONFIG"))
@@ -309,7 +311,7 @@ func setKubeconfig(host string) error {
 	if err != nil {
 		return fmt.Errorf("failed to create absolute path for the kubeconfig file: %v", err)
 	}
-	if err = os.Setenv("KUBECONFIG", kubecfgAbsPath); err != nil {
+	if err := os.Setenv("KUBECONFIG", kubecfgAbsPath); err != nil {
 		return fmt.Errorf("failed to set the KUBECONFIG environment variable")
 	}
 	return nil
