@@ -56,15 +56,13 @@ func sourceVersion(kubeRoot string) (string, error) {
 	}
 
 	// parse it, and populate it into _output/git_version
-	version := ""
 	for _, line := range output {
 		parts := strings.SplitN(line, " ", 2)
 		if len(parts) != 2 {
 			return "", fmt.Errorf("could not parse kubernetes version: %q", strings.Join(output, "\n"))
 		}
 		if parts[0] == "gitVersion" {
-			version = parts[1]
-			return version, nil
+			return parts[1], nil // parts[1] is the git version.
 		}
 	}
 	return "", fmt.Errorf("could not find kubernetes version in output: %q", strings.Join(output, "\n"))

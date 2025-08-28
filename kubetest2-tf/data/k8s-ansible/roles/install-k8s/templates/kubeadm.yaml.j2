@@ -9,7 +9,7 @@ bootstrapTokens:
   - signing
   - authentication
 localAPIEndpoint:
-  bindPort: {{ apiserver_port }}
+  bindPort: {{ apiserver_port | int }}
 nodeRegistration:
 {% if (runtime is defined) and 'containerd' == runtime %}
   criSocket: "unix:///run/containerd/containerd.sock"
@@ -35,7 +35,7 @@ networking:
   dnsDomain: "cluster.local"
 kubernetesVersion: "{{ release_marker }}"
 {% if (loadbalancer is defined) and '' != loadbalancer %}
-controlPlaneEndpoint: "{{ loadbalancer }}:{{ apiserver_port }}"
+controlPlaneEndpoint: "{{ loadbalancer }}:{{ apiserver_port | int }}"
 {% endif %}
 apiServer:
 {% if (feature_gates is defined) and (runtime_config is defined) %}
@@ -91,7 +91,7 @@ kind: JoinConfiguration
 caCertPath: /etc/kubernetes/pki/ca.crt
 discovery:
   bootstrapToken:
-    apiServerEndpoint: :{{ apiserver_port }}
+    apiServerEndpoint: :{{ apiserver_port | int }}
     token: {{ bootstrap_token }}
     unsafeSkipCAVerification: true
   tlsBootstrapToken: {{ bootstrap_token }}

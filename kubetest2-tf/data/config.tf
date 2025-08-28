@@ -22,7 +22,7 @@ variable "kubeconfig_path" {
 
 variable "workers_count" {
   description = "Number of workers in the cluster"
-  default     = 1
+  default = "1"
 }
 
 variable "bootstrap_token" {
