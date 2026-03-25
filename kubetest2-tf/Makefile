@@ -26,7 +26,7 @@ INSTALL?=install
 INSTALL_DIR?=$(shell $(REPO_ROOT)/hack/goinstalldir.sh)
 # the output binary name, overridden when cross compiling
 BINARY_NAME=kubetest2-tf
-BUILD_FLAGS=-trimpath -ldflags="-buildid= -X=sigs.k8s.io/provider-ibmcloud-test-infra/kubetest2-tf/deployer/deployer.GitTag=$(COMMIT)"
+BUILD_FLAGS=-mod=vendor -trimpath -ldflags="-buildid= -X=sigs.k8s.io/provider-ibmcloud-test-infra/kubetest2-tf/deployer/deployer.GitTag=$(COMMIT)"
 # ==============================================================================
 
 install-prereq: install-ansible setup-tf
@@ -40,12 +40,12 @@ setup-tf:
 	./hack/terraform_install.sh
 .PHONY: setup-tf
 
-install-deployer-tf: install-prereq
-	go build $(BUILD_FLAGS) -o $(OUT_DIR)/$(BINARY_NAME) .
+install-deployer-tf: install-prereq build
 	$(INSTALL) -d $(INSTALL_DIR)
 	$(INSTALL) $(OUT_DIR)/$(BINARY_NAME) $(INSTALL_DIR)/$(BINARY_NAME)
 .PHONY: install-deployer-tf
 
 build:
-	go build .
+	go build $(BUILD_FLAGS) -o $(OUT_DIR)/$(BINARY_NAME) .
 .PHONY: build
+
