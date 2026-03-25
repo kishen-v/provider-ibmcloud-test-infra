@@ -18,9 +18,9 @@ set -o errexit
 set -o nounset
 set -o pipefail
 
-TF_VERSION="1.9.8"
-TERRAFORM_PROVIDER_IBM_VERSION="1.73.0"
-TERRAFORM_PROVIDER_NULL_VERSION="3.2.3"
+TF_VERSION="1.14.8"
+TERRAFORM_PROVIDER_IBM_VERSION="1.89.0"
+TERRAFORM_PROVIDER_NULL_VERSION="3.2.4"
 TF_PLUGIN_PATH="$HOME/.terraform.d/plugins/registry.terraform.io"
 
 install_terraform(){
