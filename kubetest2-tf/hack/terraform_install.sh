@@ -18,9 +18,10 @@ set -o errexit
 set -o nounset
 set -o pipefail
 
-TF_VERSION="1.9.8"
-TERRAFORM_PROVIDER_IBM_VERSION="1.73.0"
-TERRAFORM_PROVIDER_NULL_VERSION="3.2.3"
+# Source version configuration
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source "${SCRIPT_DIR}/terraform_versions.env"
+
 TF_PLUGIN_PATH="$HOME/.terraform.d/plugins/registry.terraform.io"
 
 install_terraform(){
@@ -32,7 +33,7 @@ install_terraform(){
         unzip -o ./terraform.zip  >/dev/null 2>&1
         rm -f ./terraform.zip
         cd terraform-${TF_VERSION}
-        go build .
+        go build -ldflags="-s -w" .
         cp terraform /usr/local/bin/
     fi
 }
@@ -56,7 +57,7 @@ build_ibm_provider(){
         unzip -o ./terraform-provider-ibm.zip  >/dev/null 2>&1
         rm -f ./terraform-provider-ibm.zip
         cd terraform-provider-ibm-${TERRAFORM_PROVIDER_IBM_VERSION}
-        go build .
+        go build -ldflags="-s -w" .
         mkdir -p ${TF_PLUGIN_PATH}/hashicorp/ibm/${TERRAFORM_PROVIDER_IBM_VERSION}/linux_`go env GOARCH`
         cp -f terraform-provider-ibm ${TF_PLUGIN_PATH}/hashicorp/ibm/${TERRAFORM_PROVIDER_IBM_VERSION}/linux_`go env GOARCH`
         mkdir -p ${TF_PLUGIN_PATH}/IBM-Cloud/ibm/${TERRAFORM_PROVIDER_IBM_VERSION}/linux_`go env GOARCH`
@@ -72,7 +73,7 @@ build_null_provider(){
         unzip -o ./terraform-provider-null.zip  >/dev/null 2>&1
         rm -f ./terraform-provider-null.zip
         cd terraform-provider-null-${TERRAFORM_PROVIDER_NULL_VERSION}
-        go build .
+        go build -ldflags="-s -w" .
         mkdir -p ${TF_PLUGIN_PATH}/hashicorp/null/${TERRAFORM_PROVIDER_NULL_VERSION}/linux_`go env GOARCH`
         cp terraform-provider-null ${TF_PLUGIN_PATH}/hashicorp/null/${TERRAFORM_PROVIDER_NULL_VERSION}/linux_`go env GOARCH`
     fi
