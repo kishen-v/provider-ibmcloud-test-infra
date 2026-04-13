@@ -19,8 +19,8 @@ help: ## This help message
 
 #Common uses:
 # installing a kubetest2-tf deployer from source: `make install-deployer-tf INSTALL_DIR=$HOME/go/bin`
-# installing a kubetest2-tf deployer from IBM Cloud COS: `make install-deployer-tf-cos INSTALL_DIR=$HOME/go/bin COS_BUCKET_URL=https://...`
-# pushing a kubetest2-tf binary to IBM Cloud COS: `make push-deployer-tf-cos COS_HMAC_ACCESS_KEY=... COS_HMAC_SECRET_KEY=... COS_BUCKET_NAME=...`
+# downloading binaries from IBM Cloud COS: `make download-from-cos WHAT=terraform`
+# pushing binaries to IBM Cloud COS: `make push-to-cos WHAT=terraform COS_HMAC_ACCESS_KEY=... COS_HMAC_SECRET_KEY=... COS_BUCKET_NAME=...`
 
 # get the repo root and output path
 REPO_ROOT:=$(shell pwd)
@@ -37,8 +37,6 @@ BUILD_FLAGS=-trimpath -ldflags="-s -w -buildid= -X=sigs.k8s.io/provider-ibmcloud
 # IBM Cloud COS bucket configuration for binary downloads/uploads
 COS_REGION?=us
 COS_BUCKET_NAME?=provider-ibm-cloud-test-infra
-COS_BINARY_PATH?=$(BINARY_NAME)
-REMOTE_PATH = $(if $(filter $(BINARY_NAME),$(WHAT)),$(COS_BINARY_PATH),$(WHAT))
 # Derived values (constructed from region and bucket)
 # Using virtual-hosted-style URL: bucket-name.s3.region.cloud-object-storage.appdomain.cloud
 COS_ENDPOINT=$(COS_BUCKET_NAME).s3.$(COS_REGION).cloud-object-storage.appdomain.cloud
@@ -77,7 +75,6 @@ build-tf-and-plugins: ## Build Terraform binary and plugins for ppc64le
 	@echo "Moving terraform plugins to $(OUT_DIR)..."
 	@ARCH=$$(uname -m); \
 	if [ "$$ARCH" = "ppc64le" ]; then \
-		GOARCH=$$(go env GOARCH); \
 		TF_PLUGIN_PATH="$$HOME/.terraform.d/plugins/registry.terraform.io"; \
 		mkdir -p $(OUT_DIR)/plugins; \
 		if [ -d "$$TF_PLUGIN_PATH/hashicorp/ibm" ]; then \
