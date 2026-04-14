@@ -56,15 +56,13 @@ install_terraform_x86(){
 }
 
 build_ibm_provider(){
-    if [[ ! -f "${TF_PLUGIN_PATH}/IBM-Cloud/ibm/${TERRAFORM_PROVIDER_IBM_VERSION}/linux_${ARCH}/terraform-provider-ibm" || ! -f "${TF_PLUGIN_PATH}/hashicorp/ibm/${TERRAFORM_PROVIDER_IBM_VERSION}/linux_${ARCH}/terraform-provider-ibm" ]]; then
+    if [[ ! -f "${TF_PLUGIN_PATH}/IBM-Cloud/ibm/${TERRAFORM_PROVIDER_IBM_VERSION}/linux_${ARCH}/terraform-provider-ibm" ]]; then
         cd /tmp
         curl -fsSL https://github.com/IBM-Cloud/terraform-provider-ibm/archive/refs/tags/v${TERRAFORM_PROVIDER_IBM_VERSION}.zip -o ./terraform-provider-ibm.zip
         unzip -o ./terraform-provider-ibm.zip  >/dev/null 2>&1
         rm -f ./terraform-provider-ibm.zip
         cd terraform-provider-ibm-${TERRAFORM_PROVIDER_IBM_VERSION}
         go build -ldflags="${GO_LDFLAGS}" .
-        mkdir -p ${TF_PLUGIN_PATH}/hashicorp/ibm/${TERRAFORM_PROVIDER_IBM_VERSION}/linux_`go env GOARCH`
-        cp -f terraform-provider-ibm ${TF_PLUGIN_PATH}/hashicorp/ibm/${TERRAFORM_PROVIDER_IBM_VERSION}/linux_`go env GOARCH`
         mkdir -p ${TF_PLUGIN_PATH}/IBM-Cloud/ibm/${TERRAFORM_PROVIDER_IBM_VERSION}/linux_`go env GOARCH`
         cp -f terraform-provider-ibm ${TF_PLUGIN_PATH}/IBM-Cloud/ibm/${TERRAFORM_PROVIDER_IBM_VERSION}/linux_`go env GOARCH`
     fi

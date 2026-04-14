@@ -77,17 +77,8 @@ download-tf-plugins-from-cos: ## Download Terraform plugins from IBM Cloud COS
 	@ARCH=$$(uname -m); \
 	. $(REPO_ROOT)/hack/terraform_versions.env; \
 	TF_PLUGIN_PATH="$$HOME/.terraform.d/plugins/registry.terraform.io"; \
-	DOWNLOAD_URL=$(COS_BUCKET_URL)/plugins/hashicorp/ibm/$$TERRAFORM_PROVIDER_IBM_VERSION/linux_$$ARCH/terraform-provider-ibm; \
-	echo "Downloading terraform-provider-ibm (hashicorp) for $$ARCH from $$DOWNLOAD_URL"; \
-	mkdir -p "$$TF_PLUGIN_PATH/hashicorp/ibm/$$TERRAFORM_PROVIDER_IBM_VERSION/linux_$$ARCH"; \
-	if ! curl -fsSL -o "$$TF_PLUGIN_PATH/hashicorp/ibm/$$TERRAFORM_PROVIDER_IBM_VERSION/linux_$$ARCH/terraform-provider-ibm" \
-		"$$DOWNLOAD_URL"; then \
-		echo "Error: Failed to download from $$DOWNLOAD_URL"; \
-		exit 1; \
-	fi; \
-	chmod +x "$$TF_PLUGIN_PATH/hashicorp/ibm/$$TERRAFORM_PROVIDER_IBM_VERSION/linux_$$ARCH/terraform-provider-ibm"; \
 	DOWNLOAD_URL=$(COS_BUCKET_URL)/plugins/IBM-Cloud/ibm/$$TERRAFORM_PROVIDER_IBM_VERSION/linux_$$ARCH/terraform-provider-ibm; \
-	echo "Downloading terraform-provider-ibm (IBM-Cloud) for $$ARCH from $$DOWNLOAD_URL"; \
+	echo "Downloading terraform-provider-ibm for $$ARCH from $$DOWNLOAD_URL"; \
 	mkdir -p "$$TF_PLUGIN_PATH/IBM-Cloud/ibm/$$TERRAFORM_PROVIDER_IBM_VERSION/linux_$$ARCH"; \
 	if ! curl -fsSL -o "$$TF_PLUGIN_PATH/IBM-Cloud/ibm/$$TERRAFORM_PROVIDER_IBM_VERSION/linux_$$ARCH/terraform-provider-ibm" \
 		"$$DOWNLOAD_URL"; then \
