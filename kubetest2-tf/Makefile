@@ -67,29 +67,8 @@ build-deployer-tf: ## Build the kubetest2-tf deployer binary
 build-tf-and-plugins: ## Build Terraform binary and plugins for ppc64le
 	@echo "Building terraform binary and plugins..."
 	@mkdir -p $(OUT_DIR)
-	./hack/terraform_install.sh
-	@echo "Moving terraform binary to $(OUT_DIR)..."
-	@if [ -f /usr/local/bin/terraform ]; then \
-		mv /usr/local/bin/terraform $(OUT_DIR)/terraform; \
-	fi
-	@echo "Moving terraform plugins to $(OUT_DIR)..."
-	@ARCH=$$(uname -m); \
-	if [ "$$ARCH" = "ppc64le" ]; then \
-		TF_PLUGIN_PATH="$$HOME/.terraform.d/plugins/registry.terraform.io"; \
-		mkdir -p $(OUT_DIR)/plugins; \
-		if [ -d "$$TF_PLUGIN_PATH/hashicorp/ibm" ]; then \
-			cp -r "$$TF_PLUGIN_PATH/hashicorp/ibm" $(OUT_DIR)/plugins/; \
-			rm -rf "$$TF_PLUGIN_PATH/hashicorp/ibm"; \
-		fi; \
-		if [ -d "$$TF_PLUGIN_PATH/IBM-Cloud/ibm" ]; then \
-			cp -r "$$TF_PLUGIN_PATH/IBM-Cloud/ibm" $(OUT_DIR)/plugins/; \
-			rm -rf "$$TF_PLUGIN_PATH/IBM-Cloud/ibm"; \
-		fi; \
-		if [ -d "$$TF_PLUGIN_PATH/hashicorp/null" ]; then \
-			cp -r "$$TF_PLUGIN_PATH/hashicorp/null" $(OUT_DIR)/plugins/; \
-			rm -rf "$$TF_PLUGIN_PATH/hashicorp/null"; \
-		fi; \
-	fi
+	@mkdir -p $(OUT_DIR)/plugins
+	TF_INSTALL_DIR=$(OUT_DIR) TF_PLUGIN_PATH=$(OUT_DIR)/plugins ./hack/terraform_install.sh
 	@echo "Terraform and plugins successfully built and moved to $(OUT_DIR)"
 .PHONY: build-tf-and-plugins
 
