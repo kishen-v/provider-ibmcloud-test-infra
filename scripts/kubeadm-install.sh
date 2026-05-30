@@ -87,11 +87,8 @@ fatal() { echo '[ERROR] ' "$@" >&2; exit 1; }
 
 # --- fatal if no systemd ---
 verify_system() {
-    if [ -x /bin/systemctl ] || type systemctl > /dev/null 2>&1; then
-        HAS_SYSTEMD=true
-        return
-    fi
-    fatal 'Can not find systemd to use as a process supervisor for kubernetes'
+    [ -x /bin/systemctl ] || type systemctl > /dev/null 2>&1 || \
+        fatal 'Can not find systemd to use as a process supervisor for kubernetes'
 }
 
 quote() {
@@ -100,26 +97,12 @@ quote() {
     done
 }
 
-quote_indent() {
-    printf ' \\\n'
-    for arg in "$@"; do
-        printf '\t%s \\\n' "$(quote "$arg")"
-    done
-}
-
 escape() {
     printf '%s' "$@" | sed -e 's/\([][!#$%&()*;<=>?\_`{|}]\)/\\\1/g;'
 }
 
-escape_dq() {
-    printf '%s' "$@" | sed -e 's/"/\\"/g'
-}
-
-# --- Verify and set architecture ---
-setup_verify_arch() {
-    if [ -z "${ARCH}" ]; then
-        ARCH=$(uname -m)
-    fi
+# --- Normalize architecture ---
+normalize_arch() {
     case ${ARCH} in
         amd64|x86_64)
             ARCH=amd64
@@ -133,7 +116,14 @@ setup_verify_arch() {
         *)
             fatal "Unsupported architecture ${ARCH}"
     esac
-    
+}
+
+# --- Verify and set architecture ---
+setup_verify_arch() {
+    if [ -z "${ARCH}" ]; then
+        ARCH=$(uname -m)
+    fi
+    normalize_arch
     info "Architecture: ${ARCH}"
 }
 
@@ -144,21 +134,7 @@ setup_airgap_arch() {
         info "Defaulting to ppc64le architecture for airgap bundle"
         info "To override, set ARCH environment variable (e.g., ARCH=amd64)"
     fi
-    
-    case ${ARCH} in
-        amd64|x86_64)
-            ARCH=amd64
-            ;;
-        arm64|aarch64)
-            ARCH=arm64
-            ;;
-        ppc64le)
-            ARCH=ppc64le
-            ;;
-        *)
-            fatal "Unsupported architecture ${ARCH}"
-    esac
-    
+    normalize_arch
     info "Creating airgap bundle for architecture: ${ARCH}"
 }
 
@@ -207,15 +183,10 @@ check_selinux() {
 
 # --- Verify K8S endpoint format ---
 verify_k8s_endpoint() {
-    case "${K8S_CONTROL_PLANE_ENDPOINT}" in
-        "")
-            ;;
-        https://*)
-            ;;
-        *)
-            fatal "Only https:// URLs are supported for K8S_CONTROL_PLANE_ENDPOINT (have ${K8S_CONTROL_PLANE_ENDPOINT})"
-            ;;
-    esac
+    # Validate that endpoint is either empty or starts with https://
+    if [ -n "${K8S_CONTROL_PLANE_ENDPOINT}" ] && [[ ! "${K8S_CONTROL_PLANE_ENDPOINT}" =~ ^https:// ]]; then
+        fatal "Only https:// URLs are supported for K8S_CONTROL_PLANE_ENDPOINT (have ${K8S_CONTROL_PLANE_ENDPOINT})"
+    fi
 }
 
 # --- determine kubernetes version (fetch latest if not specified) ---
@@ -224,7 +195,7 @@ determine_k8s_version() {
         info "K8S_VERSION not specified, fetching latest stable version..."
         VERSION_FILE=$(mktemp)
         download "${VERSION_FILE}" https://dl.k8s.io/release/stable.txt
-        K8S_VERSION=$(cat "${VERSION_FILE}" | sed 's/^v//')
+        K8S_VERSION=$(sed 's/^v//' "${VERSION_FILE}")
         rm -f "${VERSION_FILE}"
         info "Using Kubernetes version: ${K8S_VERSION}"
     fi
@@ -416,19 +387,9 @@ install_kubeadm_for_bundle() {
     
     # Detect host architecture for downloading kubeadm binary
     HOST_ARCH=$(uname -m)
-    case ${HOST_ARCH} in
-        amd64|x86_64)
-            HOST_ARCH=amd64
-            ;;
-        arm64|aarch64)
-            HOST_ARCH=arm64
-            ;;
-        ppc64le)
-            HOST_ARCH=ppc64le
-            ;;
-        *)
-            fatal "Unsupported host architecture ${HOST_ARCH}"
-    esac
+    ARCH=${HOST_ARCH}
+    normalize_arch
+    HOST_ARCH=${ARCH}
     
     info "Downloading kubeadm ${KUBE_RELEASE} for host platform: ${HOST_OS}/${HOST_ARCH}..."
     
@@ -978,18 +939,19 @@ configure_firewall() {
     
     # Check if firewalld is running
     if systemctl is-active --quiet firewalld; then
+        # Common ports for all nodes
+        $SUDO firewall-cmd --permanent --add-port=10250/tcp
+        $SUDO firewall-cmd --permanent --add-port=30000-32767/tcp
+
         if [ "${CMD_K8S}" = "init" ]; then
-            # Control plane ports
+            # Additional control plane ports
             $SUDO firewall-cmd --permanent --add-port=6443/tcp
             $SUDO firewall-cmd --permanent --add-port=2379-2380/tcp
-            $SUDO firewall-cmd --permanent --add-port=10250/tcp
             $SUDO firewall-cmd --permanent --add-port=10251/tcp
             $SUDO firewall-cmd --permanent --add-port=10252/tcp
             $SUDO firewall-cmd --permanent --add-port=10255/tcp
         fi
-        # Worker node ports (also needed on control plane)
-        $SUDO firewall-cmd --permanent --add-port=10250/tcp
-        $SUDO firewall-cmd --permanent --add-port=30000-32767/tcp
+
         $SUDO firewall-cmd --reload
     else
         info "Firewalld not running, skipping firewall configuration"
@@ -1172,8 +1134,7 @@ install_calico_operator() {
 install_calico_manifest() {
     info "Installing Calico ${CALICO_VERSION} using manifest"
     
-    KUBECONFIG=/etc/kubernetes/admin.conf
-    export KUBECONFIG
+    export KUBECONFIG=/etc/kubernetes/admin.conf
     
     # Download or use cached Calico manifest
     CALICO_MANIFEST="${TMP_DIR}/calico.yaml"
