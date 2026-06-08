@@ -34,6 +34,11 @@ INSTALL?=install
 INSTALL_DIR?=$(shell $(REPO_ROOT)/hack/goinstalldir.sh)
 # the output binary name, overridden when cross compiling
 BINARY_NAME=kubetest2-tf
+# Multi-arch support: defaults to linux with architecture from uname -m, override GOOS and GOARCH for other targets
+# Examples: make build-deployer-tf GOOS=linux GOARCH=amd64
+#           make build-deployer-tf GOOS=darwin GOARCH=arm64
+GOOS?=linux
+GOARCH?=$(shell uname -m | sed -e 's/x86_64/amd64/' -e 's/aarch64/arm64/')
 BUILD_FLAGS=-trimpath -ldflags="-s -w -buildid= -X=sigs.k8s.io/provider-ibmcloud-test-infra/kubetest2-tf/deployer/deployer.GitTag=$(COMMIT)"
 # IBM Cloud COS bucket configuration for binary downloads/uploads
 COS_REGION?=us
@@ -62,21 +67,20 @@ setup-tf: ## Install Terraform
 	./hack/terraform_install.sh
 .PHONY: setup-tf
 
-build-deployer-tf: ## Build the kubetest2-tf deployer binary
-	@echo "Building $(BINARY_NAME)..."
+build-deployer-tf: ## Build the kubetest2-tf deployer binary (supports GOOS and GOARCH for cross-compilation)
+	@echo "Building $(BINARY_NAME) for $(GOOS)/$(GOARCH)..."
 	@mkdir -p $(OUT_DIR)
-	go build $(BUILD_FLAGS) -o $(OUT_DIR)/$(BINARY_NAME) .
+	GOOS=$(GOOS) GOARCH=$(GOARCH) go build $(BUILD_FLAGS) -o $(OUT_DIR)/$(BINARY_NAME) .
 .PHONY: build-deployer-tf
 
-build-tf-and-plugins: ## Build Terraform binary and plugins for ppc64le
-	@echo "Building terraform binary and plugins..."
-	@mkdir -p $(OUT_DIR)
+build-tf-and-plugins: ## Build Terraform binary and plugins (supports ARCH for cross-compilation, e.g., ARCH=amd64)
+	@echo "Building terraform binary and plugins for $(GOARCH)..."
 	@mkdir -p $(OUT_DIR)/plugins
-	TF_INSTALL_DIR=$(OUT_DIR) TF_PLUGIN_PATH=$(OUT_DIR)/plugins ./hack/terraform_install.sh
+	ARCH=$(GOARCH) TF_INSTALL_DIR=$(OUT_DIR) TF_PLUGIN_PATH=$(OUT_DIR)/plugins ./hack/terraform_install.sh
 	@echo "Terraform and plugins successfully built and moved to $(OUT_DIR)"
 .PHONY: build-tf-and-plugins
 
-download-tf-plugins-from-cos: ## Download Terraform plugins from IBM Cloud COS
+download-tf-plugins-from-cos: ## Download Terraform plugins from IBM Cloud COS (individual files)
 	@echo "Downloading terraform plugins from IBM Cloud COS..."
 	@ARCH=$$(uname -m); \
 	. $(REPO_ROOT)/hack/terraform_versions.env; \
@@ -101,6 +105,31 @@ download-tf-plugins-from-cos: ## Download Terraform plugins from IBM Cloud COS
 	chmod +x "$$TF_PLUGIN_PATH/hashicorp/null/$$TERRAFORM_PROVIDER_NULL_VERSION/linux_$$ARCH/terraform-provider-null"; \
 	echo "Successfully downloaded and installed terraform plugins to $$TF_PLUGIN_PATH"
 .PHONY: download-tf-plugins-from-cos
+
+generate-tar-tf-plugins: build-tf-and-plugins ## Build and create tarball of Terraform plugins with full path structure
+	@ARCH=$$(echo $(GOARCH) | sed -e 's/x86_64/amd64/' -e 's/aarch64/arm64/'); \
+	@echo "Creating terraform plugins tarball for $$ARCH..." \
+	TARBALL_NAME="terraform-plugins-linux-$$ARCH.tar.gz"; \
+	echo "Packaging plugins from $(OUT_DIR)/plugins into $$TARBALL_NAME"; \
+	cd $(OUT_DIR) && tar -czf $$TARBALL_NAME --transform 's|^plugins|plugins/registry.terraform.io|' plugins; \
+	echo "Successfully created $(OUT_DIR)/$$TARBALL_NAME"
+.PHONY: generate-tar-tf-plugins
+
+download-untar-tf-plugins-from-cos:
+	@ARCH=$$(uname -m | sed -e 's/x86_64/amd64/' -e 's/aarch64/arm64/'); \
+	@echo "Downloading terraform plugins (IBMCloud and null providers) tarball from IBM Cloud COS for $$ARCH..."
+	TF_PLUGIN_DIR="$$HOME/.terraform.d"; \
+	TARBALL_NAME="terraform-plugins-linux-$$ARCH.tar.gz"; \
+	DOWNLOAD_URL=$(COS_BUCKET_URL)/plugins/$$TARBALL_NAME; \
+	echo "Downloading $$TARBALL_NAME from $$DOWNLOAD_URL"; \
+	mkdir -p "$$TF_PLUGIN_DIR"; \
+	if ! curl -fsSL "$$DOWNLOAD_URL" | tar -xzf - -C "$$TF_PLUGIN_DIR"; then \
+		echo "Error: Failed to download or extract from $$DOWNLOAD_URL"; \
+		exit 1; \
+	fi; \
+	rm $$TF_PLUGIN_DIR/$$TARBALL_NAME
+	echo "Successfully downloaded and extracted terraform plugins to $$TF_PLUGIN_DIR/plugins/registry.terraform.io"
+.PHONY: download-untar-tf-plugins-from-cos
 
 
 install-deployer-tf: ## Install kubetest2-tf deployer from source or downloads prebuilt binaries from COS

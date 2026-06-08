@@ -29,10 +29,16 @@ setup-tf:
 	$(MAKE) -C kubetest2-tf/ setup-tf
 
 build-tf-and-plugins:
-	$(MAKE) -C kubetest2-tf/ build-tf-and-plugins
+	$(MAKE) -C kubetest2-tf/ build-tf-and-plugins GOARCH="$(GOARCH)" GOOS="$(GOOS)"
+
+generate-tar-tf-plugins:
+	$(MAKE) -C kubetest2-tf/ generate-tar-tf-plugins GOARCH="$(GOARCH)" GOOS="$(GOOS)"
 
 download-tf-plugins-from-cos:
 	$(MAKE) -C kubetest2-tf/ download-tf-plugins-from-cos
+
+download-untar-tf-plugins-from-cos:
+	$(MAKE) -C kubetest2-tf/ download-untar-tf-plugins-from-cos
 
 download-from-cos:
 	$(MAKE) -C kubetest2-tf/ download-from-cos WHAT="$(WHAT)"
