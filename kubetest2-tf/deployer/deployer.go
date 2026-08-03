@@ -194,7 +194,7 @@ func (d *deployer) initialize() error {
 	return nil
 }
 
-var _ types.Deployer = &deployer{}
+var _ types.DeployerWithVersion = &deployer{}
 
 func New(opts types.Options) (types.Deployer, *pflag.FlagSet) {
 	d := &deployer{
