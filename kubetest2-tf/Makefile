@@ -40,7 +40,7 @@ BINARY_NAME=kubetest2-tf
 #           make build-deployer-tf GOOS=darwin GOARCH=arm64
 GOOS?=linux
 GOARCH?=$(shell uname -m | sed -e 's/x86_64/amd64/' -e 's/aarch64/arm64/')
-BUILD_FLAGS=-trimpath -ldflags="-s -w -buildid= -X=sigs.k8s.io/provider-ibmcloud-test-infra/kubetest2-tf/deployer/deployer.GitTag=$(COMMIT)"
+BUILD_FLAGS=-trimpath -ldflags="-s -w -buildid= -X=sigs.k8s.io/provider-ibmcloud-test-infra/kubetest2-tf/deployer.GitTag=$(COMMIT)"
 # IBM Cloud COS bucket configuration for binary downloads/uploads
 COS_REGION?=us
 COS_BUCKET_NAME?=provider-ibm-cloud-test-infra
