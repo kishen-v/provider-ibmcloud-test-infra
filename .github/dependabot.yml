@@ -1,0 +1,14 @@
+version: 2
+updates:
+  - package-ecosystem: gomod
+    directory: /kubetest2-tf
+    schedule:
+      interval: weekly
+    groups:
+      k8s:
+        patterns: ["k8s.io/*", "sigs.k8s.io/*"]
+
+  - package-ecosystem: gomod
+    directory: /secret-manager
+    schedule:
+      interval: weekly
